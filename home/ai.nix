@@ -99,7 +99,7 @@
       programs.opencode = {
         enable = true;
         settings = {
-          model = "mlx/mlx-community/Qwen3-Coder-Next-4bit";
+          model = "github-copilot/claude-opus-4.8";
           provider.mlx = {
             npm = "@ai-sdk/openai-compatible";
             name = "MacBook";

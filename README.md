@@ -10,3 +10,12 @@ It contains:
 - configuration for my NixOS machines
 - configuration for my macOS machines
 - reusable `flake-parts` modules
+
+## OpenCode with GitHub Copilot
+
+Then start `opencode`, run `/connect`, select **GitHub Copilot**.
+Use `/models` to select a model, or list them with:
+
+```sh
+opencode models github-copilot
+```
