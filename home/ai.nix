@@ -1,4 +1,4 @@
-{ ... }:
+{ inputs, ... }:
 {
   flake.homeModules.ai =
     {
@@ -53,6 +53,7 @@
         openWebui
         pythonMlx
         mlxLmServer
+        inputs.llm-agents.packages.${pkgs.system}.opencode2
       ];
 
       home.shellAliases = {
