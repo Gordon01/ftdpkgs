@@ -7,23 +7,6 @@
       ...
     }:
     let
-      openWebui = pkgs.writeShellApplication {
-        name = "open-webui";
-        runtimeInputs = [ pkgs.open-webui ];
-        runtimeEnv = {
-          HOME = "${config.home.homeDirectory}/.local/share/open-webui";
-          DATA_DIR = "${config.home.homeDirectory}/.local/share/open-webui/data";
-          STATIC_DIR = "${config.home.homeDirectory}/.local/share/open-webui/static";
-          HF_HOME = "${config.home.homeDirectory}/.local/share/open-webui/hf_home";
-          SENTENCE_TRANSFORMERS_HOME = "${config.home.homeDirectory}/.local/share/open-webui/transformers_home";
-          WEBUI_URL = "http://localhost:3000";
-        };
-        text = ''
-          mkdir -p "$DATA_DIR" "$STATIC_DIR"
-          cd "$HOME"
-          exec ${pkgs.open-webui}/bin/open-webui "$@"
-        '';
-      };
       pythonMlx = pkgs.writeShellApplication {
         name = "python-mlx";
         runtimeInputs = [
@@ -50,37 +33,14 @@
     in
     {
       home.packages = [
-        openWebui
         pythonMlx
         mlxLmServer
         inputs.llm-agents.packages.${pkgs.system}.opencode2
       ];
 
       home.shellAliases = {
-        open-webui-server = "open-webui serve --host 127.0.0.1 --port 3000";
-        open-webui-start = "launchctl kickstart gui/$(id -u)/com.alex.open-webui";
-        open-webui-stop = "launchctl kill SIGTERM gui/$(id -u)/com.alex.open-webui";
         mlx-lm-start = "launchctl kickstart gui/$(id -u)/com.alex.mlx-lm-server";
         mlx-lm-stop = "launchctl kill SIGTERM gui/$(id -u)/com.alex.mlx-lm-server";
-      };
-
-      launchd.agents.open-webui = {
-        enable = true;
-        config = {
-          Label = "com.alex.open-webui";
-          ProgramArguments = [
-            "${openWebui}/bin/open-webui"
-            "serve"
-            "--host"
-            "127.0.0.1"
-            "--port"
-            "3000"
-          ];
-          RunAtLoad = true;
-          KeepAlive = false;
-          StandardOutPath = "${config.home.homeDirectory}/Library/Logs/open-webui.log";
-          StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/open-webui.log";
-        };
       };
 
       launchd.agents.mlx-lm-server = {
@@ -110,6 +70,79 @@
               "mlx-community/Qwen3.5-REAP-97B-A10B-4bit".name = "Qwen3.5-REAP-97B";
               "mlx-community/Laguna-S-2.1-OptiQ-2bit".name = "Laguna-S-2.1-OptiQ";
             };
+          };
+        };
+      };
+    };
+
+  flake.homeModules.open-webui =
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
+    let
+      cfg = config.services.open-webui;
+      webuiHome = "${config.home.homeDirectory}/.local/share/open-webui";
+      openWebui = pkgs.writeShellApplication {
+        name = "open-webui";
+        runtimeInputs = [ pkgs.open-webui ];
+        runtimeEnv = {
+          HOME = webuiHome;
+          DATA_DIR = "${webuiHome}/data";
+          STATIC_DIR = "${webuiHome}/static";
+          HF_HOME = "${webuiHome}/hf_home";
+          SENTENCE_TRANSFORMERS_HOME = "${webuiHome}/transformers_home";
+          WEBUI_URL = "http://localhost:${toString cfg.port}";
+        };
+        text = ''
+          mkdir -p "$DATA_DIR" "$STATIC_DIR"
+          cd "$HOME"
+          exec open-webui "$@"
+        '';
+      };
+    in
+    {
+      options.services.open-webui = {
+        enable = lib.mkEnableOption "Open WebUI";
+
+        host = lib.mkOption {
+          type = lib.types.str;
+          default = "127.0.0.1";
+          description = "Address on which the Open WebUI server listens.";
+        };
+
+        port = lib.mkOption {
+          type = lib.types.ints.between 1 65535;
+          default = 3000;
+          description = "Port on which the Open WebUI server listens.";
+        };
+      };
+
+      config = lib.mkIf cfg.enable {
+        home.packages = [ openWebui ];
+
+        home.shellAliases = {
+          open-webui-start = "launchctl kickstart gui/$(id -u)/${config.launchd.agents.open-webui.config.Label}";
+          open-webui-stop = "launchctl kill SIGTERM gui/$(id -u)/${config.launchd.agents.open-webui.config.Label}";
+        };
+
+        launchd.agents.open-webui = {
+          enable = true;
+          config = {
+            ProgramArguments = [
+              "${openWebui}/bin/open-webui"
+              "serve"
+              "--host"
+              cfg.host
+              "--port"
+              (toString cfg.port)
+            ];
+            RunAtLoad = true;
+            KeepAlive = false;
+            StandardOutPath = "${config.home.homeDirectory}/Library/Logs/open-webui.log";
+            StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/open-webui.log";
           };
         };
       };
