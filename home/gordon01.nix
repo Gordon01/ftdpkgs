@@ -10,7 +10,8 @@
       imports = [
         self.homeModules.dev
         self.homeModules.ai
-        self."homeModules".open-webui
+        self.homeModules.mlx-lm
+        self.homeModules.open-webui
         self.homeModules.shell
       ];
 
@@ -20,6 +21,7 @@
 
       home.packages = [ pkgs.home-manager ];
       services.open-webui.enable = true;
+      services.mlx-lm.enable = true;
     };
 
     dev = { pkgs, ... }: {

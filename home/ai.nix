@@ -1,12 +1,16 @@
 { inputs, ... }:
 {
-  flake.homeModules.ai =
+  flake.homeModules.mlx-lm =
     {
       config,
+      lib,
       pkgs,
       ...
     }:
     let
+      cfg = config.services.mlx-lm;
+      mlxLmHome = "${config.xdg.dataHome}/mlx-lm";
+      mlxLmLogPath = "${mlxLmHome}/mlx-lm-server.log";
       pythonMlx = pkgs.writeShellApplication {
         name = "python-mlx";
         runtimeInputs = [
@@ -32,30 +36,63 @@
       };
     in
     {
-      home.packages = [
-        pythonMlx
-        mlxLmServer
-        inputs.llm-agents.packages.${pkgs.system}.opencode2
-      ];
+      options.services.mlx-lm = {
+        enable = lib.mkEnableOption "MLX-LM server";
 
-      home.shellAliases = {
-        mlx-lm-start = "launchctl kickstart gui/$(id -u)/com.alex.mlx-lm-server";
-        mlx-lm-stop = "launchctl kill SIGTERM gui/$(id -u)/com.alex.mlx-lm-server";
-      };
+        host = lib.mkOption {
+          type = lib.types.str;
+          default = "127.0.0.1";
+          description = "Address on which the MLX-LM server listens.";
+        };
 
-      launchd.agents.mlx-lm-server = {
-        enable = true;
-        config = {
-          Label = "com.alex.mlx-lm-server";
-          ProgramArguments = [
-            "${mlxLmServer}/bin/mlx-lm-server"
-          ];
-          RunAtLoad = false;
-          KeepAlive = false;
-          StandardOutPath = "${config.home.homeDirectory}/Library/Logs/mlx-lm-server.log";
-          StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/mlx-lm-server.log";
+        port = lib.mkOption {
+          type = lib.types.ints.between 1 65535;
+          default = 8080;
+          description = "Port on which the MLX-LM server listens.";
         };
       };
+
+      config = lib.mkIf cfg.enable {
+        home.packages = [
+          pythonMlx
+          mlxLmServer
+        ];
+
+        home.activation.createMlxLmLogDir =
+          lib.hm.dag.entryBetween [ "setupLaunchAgents" ] [ "writeBoundary" ]
+            ''
+              run mkdir -p $VERBOSE_ARG -- ${lib.escapeShellArg mlxLmHome}
+            '';
+
+        home.shellAliases = {
+          mlx-lm-start = "launchctl kickstart gui/$(id -u)/com.alex.mlx-lm-server";
+          mlx-lm-stop = "launchctl kill SIGTERM gui/$(id -u)/com.alex.mlx-lm-server";
+        };
+
+        launchd.agents.mlx-lm-server = {
+          enable = true;
+          config = {
+            Label = "com.alex.mlx-lm-server";
+            ProgramArguments = [
+              (lib.getExe mlxLmServer)
+              "--host"
+              cfg.host
+              "--port"
+              (toString cfg.port)
+            ];
+            RunAtLoad = false;
+            KeepAlive = false;
+            StandardOutPath = mlxLmLogPath;
+            StandardErrorPath = mlxLmLogPath;
+          };
+        };
+      };
+    };
+
+  flake.homeModules.ai =
+    { pkgs, ... }:
+    {
+      home.packages = [ inputs.llm-agents.packages.${pkgs.system}.opencode2 ];
 
       programs.opencode = {
         enable = true;
