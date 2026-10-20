@@ -84,7 +84,8 @@
     }:
     let
       cfg = config.services.open-webui;
-      webuiHome = "${config.home.homeDirectory}/.local/share/open-webui";
+      webuiHome = "${config.xdg.dataHome}/open-webui";
+      webuiLogPath = "${webuiHome}/open-webui.log";
       openWebui = pkgs.writeShellApplication {
         name = "open-webui";
         runtimeInputs = [ pkgs.open-webui ];
@@ -95,6 +96,9 @@
           HF_HOME = "${webuiHome}/hf_home";
           SENTENCE_TRANSFORMERS_HOME = "${webuiHome}/transformers_home";
           WEBUI_URL = "http://localhost:${toString cfg.port}";
+        }
+        // lib.optionalAttrs (cfg.openai.baseUrls != [ ]) {
+          OPENAI_API_BASE_URLS = lib.concatStringsSep ";" cfg.openai.baseUrls;
         };
         text = ''
           mkdir -p "$DATA_DIR" "$STATIC_DIR"
@@ -118,10 +122,24 @@
           default = 3000;
           description = "Port on which the Open WebUI server listens.";
         };
+
+        openai.baseUrls = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+          example = [ "http://localhost:8080/v1" ];
+          description = ''
+            Base URLs of OpenAI-compatible API servers, including any required
+            path prefix such as /v1.
+          '';
+        };
       };
 
       config = lib.mkIf cfg.enable {
         home.packages = [ openWebui ];
+
+        home.activation.createOpenWebuiHome = lib.hm.dag.entryBefore [ "setupLaunchAgents" ] ''
+          run mkdir -p $VERBOSE_ARG -- ${lib.escapeShellArg webuiHome}
+        '';
 
         home.shellAliases = {
           open-webui-start = "launchctl kickstart gui/$(id -u)/${config.launchd.agents.open-webui.config.Label}";
@@ -132,7 +150,7 @@
           enable = true;
           config = {
             ProgramArguments = [
-              "${openWebui}/bin/open-webui"
+              (lib.getExe openWebui)
               "serve"
               "--host"
               cfg.host
@@ -141,8 +159,8 @@
             ];
             RunAtLoad = true;
             KeepAlive = false;
-            StandardOutPath = "${config.home.homeDirectory}/Library/Logs/open-webui.log";
-            StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/open-webui.log";
+            StandardOutPath = webuiLogPath;
+            StandardErrorPath = webuiLogPath;
           };
         };
       };
