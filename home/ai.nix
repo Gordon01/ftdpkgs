@@ -123,26 +123,49 @@
       cfg = config.services.open-webui;
       webuiHome = "${config.xdg.dataHome}/open-webui";
       webuiLogDir = "${webuiHome}/logs";
-      openWebui = pkgs.writeShellApplication {
-        name = "open-webui-server";
-        runtimeEnv = {
-          # https://docs.openwebui.com/reference/env-configuration/
-          DATA_DIR = "${webuiHome}/data";
-          STATIC_DIR = "${webuiHome}/static";
-          HF_HOME = "${webuiHome}/hf_home";
-          SENTENCE_TRANSFORMERS_HOME = "${webuiHome}/transformers_home";
-        }
-        // lib.optionalAttrs (cfg.openai.baseUrls != [ ]) {
-          OPENAI_API_BASE_URLS = lib.concatStringsSep ";" cfg.openai.baseUrls;
-        };
-        text = ''exec ${lib.getExe cfg.package} "$@"'';
-      };
+      environmentVariables = {
+        DATA_DIR = "${webuiHome}/data";
+        STATIC_DIR = "${webuiHome}/static";
+        HF_HOME = "${webuiHome}/hf_home";
+        SENTENCE_TRANSFORMERS_HOME = "${webuiHome}/transformers_home";
+      }
+      // lib.optionalAttrs (cfg.openai.baseUrls != [ ]) {
+        OPENAI_API_BASE_URLS = lib.concatStringsSep ";" cfg.openai.baseUrls;
+      }
+      // lib.optionalAttrs (cfg.webuiUrl != null) {
+        WEBUI_URL = cfg.webuiUrl;
+      }
+      // cfg.environment;
     in
     {
       options.services.open-webui = {
-        enable = lib.mkEnableOption "Open WebUI";
+        enable = lib.mkEnableOption "Open WebUI: Self-Hosted AI Platform";
 
         package = lib.mkPackageOption pkgs "open-webui" { };
+
+        environment = lib.mkOption {
+          type = lib.types.attrsOf lib.types.str;
+          default = { };
+          example = {
+            ENABLE_OLLAMA_API = "False";
+          };
+          description = ''
+            Additional environment variables for the Open WebUI service.
+            These override module-provided values.
+
+            See <https://docs.openwebui.com/reference/env-configuration/>.
+          '';
+        };
+
+        webuiUrl = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          example = "https://chat.example.com";
+          description = ''
+            Specifies the URL where your Open WebUI installation is reachable.
+            Needed for search engine support and OAuth/SSO.
+          '';
+        };
 
         host = lib.mkOption {
           type = lib.types.str;
@@ -151,7 +174,7 @@
         };
 
         port = lib.mkOption {
-          type = lib.types.ints.between 1 65535;
+          type = lib.types.port;
           default = 3000;
           description = "Port on which the Open WebUI server listens.";
         };
@@ -176,13 +199,14 @@
           enable = true;
           config = {
             ProgramArguments = [
-              (lib.getExe openWebui)
+              (lib.getExe cfg.package)
               "serve"
               "--host"
               cfg.host
               "--port"
               (toString cfg.port)
             ];
+            EnvironmentVariables = environmentVariables;
             RunAtLoad = true;
             KeepAlive = true;
             WorkingDirectory = "${webuiHome}/home";
