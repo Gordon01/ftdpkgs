@@ -58,17 +58,22 @@
 
       networking.useDHCP = true;
       environment.systemPackages = with pkgs; [
-        ncurses
+        ghostty.terminfo
         htop
       ];
       services.openssh.enable = true;
+      services.openssh.settings = {
+        AuthenticationMethods = "publickey";
+        PasswordAuthentication = false;
+        KbdInteractiveAuthentication = false;
+        PermitRootLogin = "no";
+      };
       security.sudo.enable = true;
       security.sudo.wheelNeedsPassword = false;
 
       users.users.asergeev = {
         isNormalUser = true;
         extraGroups = [ "wheel" ];
-        hashedPassword = "$6$.Gu1a/Fy4GZe87HB$zPYtv4475JLWCpDqT1LBamWhQhBPV1feyPg8y8.XRZYuTqt/GDrFBvSwSY7hBDNmui6wkjAkqRYhmKV25EaPN1";
         openssh.authorizedKeys.keyFiles = [ ../keys/id_mac.pub ];
         shell = pkgs.zsh;
       };
@@ -87,9 +92,10 @@
 
       nix = {
         package = pkgs.nix;
-        extraOptions = ''
-          experimental-features = nix-command flakes
-        '';
+        settings.experimental-features = [
+          "nix-command"
+          "flakes"
+        ];
       };
     };
 
