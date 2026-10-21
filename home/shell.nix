@@ -1,18 +1,8 @@
 { inputs, ... }:
 {
-  flake.homeModules.shell =
-    { pkgs, ... }:
-    {
-      imports = [ inputs.nix-index-database.homeModules.nix-index ];
-
+  flake.homeModules = {
+    shell = {
       programs = {
-        ghostty = {
-          enable = true;
-          package = pkgs.ghostty-bin;
-          enableZshIntegration = true;
-        };
-        nix-index-database.comma.enable = true;
-
         direnv = {
           enable = true;
           enableZshIntegration = true;
@@ -36,4 +26,20 @@
         };
       };
     };
+
+    gui =
+      { pkgs, ... }:
+      {
+        imports = [ inputs.nix-index-database.homeModules.nix-index ];
+
+        programs = {
+          ghostty = {
+            enable = true;
+            package = pkgs.ghostty-bin;
+            enableZshIntegration = true;
+          };
+          nix-index-database.comma.enable = true;
+        };
+      };
+  };
 }

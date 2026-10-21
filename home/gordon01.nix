@@ -13,6 +13,7 @@
         self.homeModules.mlx-lm
         self.homeModules.open-webui
         self.homeModules.shell
+        self.homeModules.gui
       ];
 
       home.stateVersion = "26.11";
