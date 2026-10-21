@@ -123,6 +123,14 @@
       cfg = config.services.open-webui;
       webuiHome = "${config.xdg.dataHome}/open-webui";
       webuiLogDir = "${webuiHome}/logs";
+      command = [
+        (lib.getExe cfg.package)
+        "serve"
+        "--host"
+        cfg.host
+        "--port"
+        (toString cfg.port)
+      ];
       environmentVariables = {
         DATA_DIR = "${webuiHome}/data";
         STATIC_DIR = "${webuiHome}/static";
@@ -195,17 +203,23 @@
 
         xdg.dataFile."open-webui/home/.keep".text = "";
 
-        launchd.agents.open-webui = {
+        systemd.user.services.open-webui = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
+          Unit = {
+            Description = "Open WebUI";
+            PartOf = [ "graphical-session.target" ];
+          };
+          Install.WantedBy = [ "graphical-session.target" ];
+          Service = {
+            ExecStart = lib.concatStringsSep " " command;
+            Environment = lib.mapAttrsToList (name: value: "${name}=${value}") environmentVariables;
+            WorkingDirectory = "${webuiHome}/home";
+          };
+        };
+
+        launchd.agents.open-webui = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
           enable = true;
           config = {
-            ProgramArguments = [
-              (lib.getExe cfg.package)
-              "serve"
-              "--host"
-              cfg.host
-              "--port"
-              (toString cfg.port)
-            ];
+            ProgramArguments = command;
             EnvironmentVariables = environmentVariables;
             RunAtLoad = true;
             KeepAlive = true;
