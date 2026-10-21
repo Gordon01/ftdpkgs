@@ -122,31 +122,27 @@
     let
       cfg = config.services.open-webui;
       webuiHome = "${config.xdg.dataHome}/open-webui";
-      webuiLogPath = "${webuiHome}/open-webui.log";
+      webuiLogDir = "${webuiHome}/logs";
       openWebui = pkgs.writeShellApplication {
-        name = "open-webui";
-        runtimeInputs = [ pkgs.open-webui ];
+        name = "open-webui-server";
         runtimeEnv = {
-          HOME = webuiHome;
+          # https://docs.openwebui.com/reference/env-configuration/
           DATA_DIR = "${webuiHome}/data";
           STATIC_DIR = "${webuiHome}/static";
           HF_HOME = "${webuiHome}/hf_home";
           SENTENCE_TRANSFORMERS_HOME = "${webuiHome}/transformers_home";
-          WEBUI_URL = "http://localhost:${toString cfg.port}";
         }
         // lib.optionalAttrs (cfg.openai.baseUrls != [ ]) {
           OPENAI_API_BASE_URLS = lib.concatStringsSep ";" cfg.openai.baseUrls;
         };
-        text = ''
-          mkdir -p "$DATA_DIR" "$STATIC_DIR"
-          cd "$HOME"
-          exec open-webui "$@"
-        '';
+        text = ''exec ${lib.getExe cfg.package} "$@"'';
       };
     in
     {
       options.services.open-webui = {
         enable = lib.mkEnableOption "Open WebUI";
+
+        package = lib.mkPackageOption pkgs "open-webui" { };
 
         host = lib.mkOption {
           type = lib.types.str;
@@ -172,16 +168,9 @@
       };
 
       config = lib.mkIf cfg.enable {
-        home.packages = [ openWebui ];
+        home.packages = [ cfg.package ];
 
-        home.activation.createOpenWebuiHome = lib.hm.dag.entryBefore [ "setupLaunchAgents" ] ''
-          run mkdir -p $VERBOSE_ARG -- ${lib.escapeShellArg webuiHome}
-        '';
-
-        home.shellAliases = {
-          open-webui-start = "launchctl kickstart gui/$(id -u)/${config.launchd.agents.open-webui.config.Label}";
-          open-webui-stop = "launchctl kill SIGTERM gui/$(id -u)/${config.launchd.agents.open-webui.config.Label}";
-        };
+        xdg.dataFile."open-webui/home/.keep".text = "";
 
         launchd.agents.open-webui = {
           enable = true;
@@ -195,9 +184,10 @@
               (toString cfg.port)
             ];
             RunAtLoad = true;
-            KeepAlive = false;
-            StandardOutPath = webuiLogPath;
-            StandardErrorPath = webuiLogPath;
+            KeepAlive = true;
+            WorkingDirectory = "${webuiHome}/home";
+            StandardOutPath = "${webuiLogDir}/output.log";
+            StandardErrorPath = "${webuiLogDir}/error.log";
           };
         };
       };

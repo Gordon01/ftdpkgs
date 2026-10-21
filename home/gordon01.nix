@@ -20,7 +20,10 @@
       home.homeDirectory = lib.mkDefault "/Users/alex";
 
       home.packages = [ pkgs.home-manager ];
-      services.open-webui.enable = true;
+      services.open-webui = {
+        enable = true;
+        openai.baseUrls = [ "http://localhost:8080/v1" ];
+      };
       services.mlx-lm.enable = true;
     };
 
