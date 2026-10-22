@@ -33,6 +33,11 @@
     llm-agents.url = "github:numtide/llm-agents.nix";
 
     fast-sync.url = "github:Gordon01/fast-sync";
+
+    cource = {
+      url = "git+https://gitverse.ru/sb-rs/cource";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =

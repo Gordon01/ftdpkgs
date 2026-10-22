@@ -2,6 +2,7 @@
 {
   flake.nixosModules.cloud =
     {
+      config,
       pkgs,
       ...
     }:
@@ -57,6 +58,10 @@
       };
 
       networking.useDHCP = true;
+      networking.firewall = {
+        allowedTCPPorts = [ config.home-manager.users.asergeev.services.rendezvous.httpPort ];
+        allowedUDPPorts = [ config.home-manager.users.asergeev.services.rendezvous.udpPort ];
+      };
       environment.systemPackages = with pkgs; [
         ghostty.terminfo
         htop
@@ -73,6 +78,7 @@
 
       users.users.asergeev = {
         isNormalUser = true;
+        linger = true;
         extraGroups = [ "wheel" ];
         openssh.authorizedKeys.keyFiles = [ ../keys/id_mac.pub ];
         shell = pkgs.zsh;
@@ -82,7 +88,11 @@
       home-manager.useGlobalPkgs = true;
       home-manager.useUserPackages = true;
       home-manager.users.asergeev = {
-        imports = [ self.homeModules.shell ];
+        imports = [
+          self.homeModules.shell
+          inputs.cource.homeModules.rendezvous
+        ];
+        services.rendezvous.enable = true;
         home = {
           username = "asergeev";
           homeDirectory = "/home/asergeev";
