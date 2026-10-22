@@ -20,6 +20,7 @@
       system.stateVersion = "25.05";
       networking.hostName = "nixos-wsl";
       time.timeZone = "Europe/Moscow";
+      programs.nix-ld.enable = true;
 
       nix = {
         package = pkgs.nix;
