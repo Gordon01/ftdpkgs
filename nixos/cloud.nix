@@ -10,7 +10,7 @@
       imports = [
         inputs.disko.nixosModules.disko
         inputs.home-manager.nixosModules.home-manager
-        self.nixosModules.tailscale
+        self.nixosModules.network
       ];
 
       nixpkgs.hostPlatform = "x86_64-linux";
@@ -64,16 +64,9 @@
         allowedUDPPorts = [ config.home-manager.users.asergeev.services.rendezvous.udpPort ];
       };
       environment.systemPackages = with pkgs; [
-        ghostty.terminfo
         htop
       ];
-      services.openssh.enable = true;
-      services.openssh.settings = {
-        AuthenticationMethods = "publickey";
-        PasswordAuthentication = false;
-        KbdInteractiveAuthentication = false;
-        PermitRootLogin = "no";
-      };
+      
       security.sudo.enable = true;
       security.sudo.wheelNeedsPassword = false;
 
@@ -82,7 +75,6 @@
         linger = true;
         extraGroups = [ "wheel" ];
         openssh.authorizedKeys.keyFiles = [
-          ../keys/id_mac.pub
           ../keys/id_home_win.pub
         ];
         shell = pkgs.zsh;
