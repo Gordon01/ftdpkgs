@@ -1,7 +1,9 @@
 { inputs, ... }:
 {
   flake.homeModules = {
-    shell = {
+    shell = { pkgs, ... }: {
+      home.packages = [ pkgs.nix-output-monitor ];
+
       programs = {
         direnv = {
           enable = true;
