@@ -34,6 +34,11 @@
 
     fast-sync.url = "github:Gordon01/fast-sync";
 
+    gitverse-runner = {
+      url = "file+https://gitverse.ru/api/packages/gitverse/generic/act_runner_linux_amd64/6.0.2/act_runner_linux_amd64";
+      flake = false;
+    };
+
     cource = {
       url = "git+https://gitverse.ru/sb-rs/cource";
       inputs.nixpkgs.follows = "nixpkgs";

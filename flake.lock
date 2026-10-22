@@ -172,6 +172,18 @@
         "type": "github"
       }
     },
+    "gitverse-runner": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-x1VF3yu68Tp+CBL4/8uEq+VCzVHZlaW1P4uuC01qEKE=",
+        "type": "file",
+        "url": "https://gitverse.ru/api/packages/gitverse/generic/act_runner_linux_amd64/6.0.2/act_runner_linux_amd64"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://gitverse.ru/api/packages/gitverse/generic/act_runner_linux_amd64/6.0.2/act_runner_linux_amd64"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -399,6 +411,7 @@
         "disko": "disko",
         "fast-sync": "fast-sync",
         "flake-parts": "flake-parts_3",
+        "gitverse-runner": "gitverse-runner",
         "home-manager": "home-manager",
         "import-tree": "import-tree_3",
         "llm-agents": "llm-agents",

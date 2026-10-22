@@ -10,12 +10,18 @@
       imports = [
         inputs.disko.nixosModules.disko
         inputs.home-manager.nixosModules.home-manager
+        self.nixosModules.gitverse-runner
       ];
 
       nixpkgs.hostPlatform = "x86_64-linux";
       system.stateVersion = "26.11";
       networking.hostName = "cloud";
       time.timeZone = "Europe/Moscow";
+
+      services.gitverse-runner = {
+        enable = true;
+        settings.tokenFile = "/var/lib/gitverse-runner/token";
+      };
 
       disko.devices.disk.main = {
         type = "disk";
