@@ -80,10 +80,14 @@
         isNormalUser = true;
         linger = true;
         extraGroups = [ "wheel" ];
-        openssh.authorizedKeys.keyFiles = [ ../keys/id_mac.pub ];
+        openssh.authorizedKeys.keyFiles = [
+          ../keys/id_mac.pub
+          ../keys/id_home_win.pub
+        ];
         shell = pkgs.zsh;
       };
       programs.zsh.enable = true;
+      programs.nix-ld.enable = true;
 
       home-manager.useGlobalPkgs = true;
       home-manager.useUserPackages = true;
