@@ -1,3 +1,5 @@
+# Compose the cloud machine; add host provisioning and workload choices here,
+# keeping shared account and network policy in reusable modules.
 { inputs, self, ... }:
 {
   flake.nixosModules.cloud =
@@ -9,7 +11,7 @@
     {
       imports = [
         inputs.disko.nixosModules.disko
-        inputs.home-manager.nixosModules.home-manager
+        self.nixosModules.asergeev
         self.nixosModules.network
       ];
 
@@ -66,33 +68,23 @@
       environment.systemPackages = with pkgs; [
         htop
       ];
-      
+
       security.sudo.enable = true;
       security.sudo.wheelNeedsPassword = false;
 
       users.users.asergeev = {
-        isNormalUser = true;
-        linger = true;
-        extraGroups = [ "wheel" ];
         openssh.authorizedKeys.keyFiles = [
           ../keys/id_home_win.pub
         ];
-        shell = pkgs.zsh;
       };
-      programs.zsh.enable = true;
       programs.nix-ld.enable = true;
 
-      home-manager.useGlobalPkgs = true;
-      home-manager.useUserPackages = true;
       home-manager.users.asergeev = {
         imports = [
-          self.homeModules.shell
           inputs.cource.homeModules.rendezvous
         ];
         services.rendezvous.enable = true;
         home = {
-          username = "asergeev";
-          homeDirectory = "/home/asergeev";
           stateVersion = "26.11";
         };
       };

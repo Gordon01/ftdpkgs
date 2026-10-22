@@ -1,4 +1,6 @@
-{ inputs, ... }:
+# Define the shared interactive command-line environment; add shell behavior and
+# everyday CLI integrations here, not desktop applications.
+{ ... }:
 {
   flake.homeModules = {
     shell = { pkgs, ... }: {
@@ -7,11 +9,9 @@
       programs = {
         direnv = {
           enable = true;
-          enableZshIntegration = true;
         };
         starship = {
           enable = true;
-          enableZshIntegration = true;
         };
         zsh = {
           enable = true;
@@ -28,20 +28,5 @@
         };
       };
     };
-
-    gui =
-      { pkgs, ... }:
-      {
-        imports = [ inputs.nix-index-database.homeModules.nix-index ];
-
-        programs = {
-          ghostty = {
-            enable = true;
-            package = pkgs.ghostty-bin;
-            enableZshIntegration = true;
-          };
-          nix-index-database.comma.enable = true;
-        };
-      };
   };
 }

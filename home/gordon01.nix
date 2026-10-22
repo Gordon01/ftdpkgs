@@ -1,3 +1,5 @@
+# Compose the personal macOS user profile; select modules and service instances
+# here, keeping reusable implementations separate.
 { inputs, self, ... }:
 {
   flake.homeConfigurations.gordon01 = inputs.home-manager.lib.homeManagerConfiguration {
@@ -26,27 +28,6 @@
         openai.baseUrls = [ "http://localhost:8080/v1" ];
       };
       services.mlx-lm.enable = true;
-    };
-
-    dev = { pkgs, ... }: {
-      home.packages = with pkgs; [
-        nixd
-        nixfmt
-      ];
-
-      programs = {
-        git.enable = true;
-        git.settings.user = {
-          name = "Alexander Sergeev";
-          email = "etc9053@gmail.com";
-        };
-        tmux = {
-          enable = true;
-          mouse = true;
-          newSession = true;
-          secureSocket = true;
-        };
-      };
     };
   };
 }

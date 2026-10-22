@@ -18,15 +18,11 @@ sudo env NIXPKGS_ALLOW_UNFREE=1 darwin-rebuild switch --flake . --impure
 
 Open WebUI is configured to run as a launch agent after the system configuration is applied. Open <http://127.0.0.1:3000> in a browser to access it. Its persistent data and static files live in `~/.local/share/open-webui`.
 
-The service logs are written to `~/Library/Logs/open-webui.log`.
-The `open-webui` command is the nixpkgs binary configured with the persistent data environment. To run the server manually, use `open-webui-server`.
-
-Use these aliases to stop and restart the service:
-
-```sh
-open-webui-stop
-open-webui-start
-```
+The service logs are written to `~/.local/share/open-webui/logs/output.log` and
+`~/.local/share/open-webui/logs/error.log` (under `$XDG_DATA_HOME` if configured).
+The launch agent supplies the persistent data environment to the nixpkgs
+`open-webui serve` command; the installed `open-webui` binary is not a wrapper.
+No `open-webui-server` command or WebUI start/stop aliases are defined.
 
 ## MLX language model server
 

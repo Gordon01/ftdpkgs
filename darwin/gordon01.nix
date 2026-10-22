@@ -1,3 +1,5 @@
+# Compose this Mac's system profile; add machine-specific settings and module
+# selections here, keeping reusable desktop preferences in the GUI module.
 { self, inputs, ... }:
 {
   flake.darwinConfigurations."Gordon01-MB" = inputs.nix-darwin.lib.darwinSystem {
@@ -18,6 +20,8 @@
         home-manager.useUserPackages = true;
         home-manager.users.alex = self.homeModules.gordon01;
         users.users.alex.home = "/Users/alex";
+        system.primaryUser = "alex";
+        system.defaults.screencapture.location = "/Users/alex/Pictures/Screenshots";
 
         services.tailscale.enable = true;
 
