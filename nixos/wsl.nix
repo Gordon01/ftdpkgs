@@ -9,6 +9,7 @@
       imports = [
         self.nixosModules.home-assistant
         self.nixosModules.asergeev
+        self.nixosModules.tailscale
       ];
 
       wsl = {

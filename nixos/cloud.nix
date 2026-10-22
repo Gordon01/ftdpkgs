@@ -10,6 +10,7 @@
       imports = [
         inputs.disko.nixosModules.disko
         inputs.home-manager.nixosModules.home-manager
+        self.nixosModules.tailscale
       ];
 
       nixpkgs.hostPlatform = "x86_64-linux";
