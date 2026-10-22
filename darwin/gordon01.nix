@@ -10,9 +10,9 @@
 
         # Available to all users on this Mac.
         environment.systemPackages = with pkgs; [
-          vim
-          tmux
           git
+          tmux
+          vim
         ];
 
         security.pam.services.sudo_local.touchIdAuth = true;

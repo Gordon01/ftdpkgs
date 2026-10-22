@@ -22,7 +22,10 @@
       home.username = lib.mkDefault "alex";
       home.homeDirectory = lib.mkDefault "/Users/alex";
 
-      home.packages = [ pkgs.home-manager ];
+      home.packages = with pkgs; [
+        maccy
+        home-manager
+      ];
       services.open-webui = {
         enable = true;
         openai.baseUrls = [ "http://localhost:8080/v1" ];
