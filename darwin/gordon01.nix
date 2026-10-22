@@ -19,6 +19,8 @@
         home-manager.users.alex = self.homeModules.gordon01;
         users.users.alex.home = "/Users/alex";
 
+        services.tailscale.enable = true;
+
         # Nix is managed outside nix-darwin by Determinate Nix installer.
         nix.enable = false;
         # Keep this unchanged unless intentionally migrating nix-darwin state.
