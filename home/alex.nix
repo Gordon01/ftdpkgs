@@ -26,6 +26,7 @@ in
       self.homeModules.open-webui
       self.homeModules.shell
       self.homeModules.gui
+      self.homeModules.darwin-devtool-shims
     ];
 
     home.stateVersion = "26.11";
