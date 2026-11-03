@@ -21,7 +21,13 @@
       };
 
       system.stateVersion = "25.05";
-      networking.hostName = "nixos-wsl";
+      networking = {
+        hostName = "nixos-wsl";
+        proxy = {
+          default = "http://127.0.0.1:10809";
+          noProxy = "127.0.0.1,localhost,::1";
+        };
+      };
       time.timeZone = "Europe/Moscow";
       programs.nix-ld.enable = true;
 
