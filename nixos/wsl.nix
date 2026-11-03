@@ -25,10 +25,7 @@
       time.timeZone = "Europe/Moscow";
       programs.nix-ld.enable = true;
 
-      home-manager.users.asergeev = {
-        imports = [ self.homeModules.dev ];
-        home.stateVersion = "25.05";
-      };
+      home-manager.users.asergeev.home.stateVersion = "25.05";
 
       nix = {
         package = pkgs.nix;

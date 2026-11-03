@@ -18,7 +18,7 @@
         security.pam.services.sudo_local.touchIdAuth = true;
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;
-        home-manager.users.alex = self.homeModules.gordon01;
+        home-manager.users.alex = self.homeModules.alex;
         users.users.alex.home = "/Users/alex";
         system.primaryUser = "alex";
         system.defaults.screencapture.location = "/Users/alex/Pictures/Screenshots";

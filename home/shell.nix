@@ -1,32 +1,36 @@
 # Define the shared interactive command-line environment; add shell behavior and
 # everyday CLI integrations here, not desktop applications.
-{ ... }:
+{ inputs, ... }:
 {
-  flake.homeModules = {
-    shell = { pkgs, ... }: {
-      home.packages = [ pkgs.nix-output-monitor ];
+  flake.homeModules.shell = { pkgs, ... }: {
+    imports = [ inputs.nix-index-database.homeModules.nix-index ];
 
-      programs = {
-        direnv = {
-          enable = true;
-        };
-        starship = {
-          enable = true;
-        };
-        zsh = {
-          enable = true;
-          enableCompletion = true;
-          autosuggestion.enable = true;
-          syntaxHighlighting.enable = true;
-        };
-        fzf = {
-          enable = true;
-          defaultOptions = [
-            "--height 40%"
-            "--border rounded"
-          ];
-        };
+    home.packages = with pkgs; [
+      htop
+      nix-output-monitor
+    ];
+
+    programs = {
+      direnv = {
+        enable = true;
       };
+      starship = {
+        enable = true;
+      };
+      zsh = {
+        enable = true;
+        enableCompletion = true;
+        autosuggestion.enable = true;
+        syntaxHighlighting.enable = true;
+      };
+      fzf = {
+        enable = true;
+        defaultOptions = [
+          "--height 40%"
+          "--border rounded"
+        ];
+      };
+      nix-index-database.comma.enable = true;
     };
   };
 }

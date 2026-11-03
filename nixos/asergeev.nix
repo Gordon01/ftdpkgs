@@ -16,7 +16,10 @@
     home-manager.useGlobalPkgs = true;
     home-manager.useUserPackages = true;
     home-manager.users.asergeev = {
-      imports = [ self.homeModules.shell ];
+      imports = [
+        self.homeModules.dev
+        self.homeModules.shell
+      ];
       home = {
         username = "asergeev";
         homeDirectory = "/home/asergeev";

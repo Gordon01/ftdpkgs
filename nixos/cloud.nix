@@ -65,9 +65,6 @@
         allowedTCPPorts = [ config.home-manager.users.asergeev.services.rendezvous.httpPort ];
         allowedUDPPorts = [ config.home-manager.users.asergeev.services.rendezvous.udpPort ];
       };
-      environment.systemPackages = with pkgs; [
-        htop
-      ];
 
       security.sudo.enable = true;
       security.sudo.wheelNeedsPassword = false;
