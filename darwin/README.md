@@ -8,6 +8,27 @@ darwin-rebuild build --flake .#Gordon01-MB
 
 Apply it with `nix run .#deploy -- mac`.
 
+## macOS developer-tool blockers
+
+The [devtool-blockers.nix](./devtool-blockers.nix) module blocks Apple's developer-tool
+placeholders from triggering the Command Line Tools installer. It uses nix-darwin's
+[`environment.systemPath`](https://nix-darwin.github.io/nix-darwin/manual/index.html#opt-environment.systemPath)
+to order PATH without custom shell hooks:
+
+```text
+Nix profiles -> blocking fallbacks -> /usr/local/bin -> /usr/bin -> ...
+```
+
+Blocked commands print an explanation and exit 127, including `xcrun` and
+`xcode-select --install`. Nix tools and tools prepended by `nix shell` or
+`nix develop` take precedence; tools in `/usr/local/bin` do not.
+
+Apply the Darwin configuration and start a fresh shell to enable protection;
+standalone Home Manager does not enable it. Absolute paths such as `/usr/bin/gcc`
+and applications that do not inherit nix-darwin's PATH bypass it.
+`command -v` still finds blockers, so presence checks do not report tools missing.
+Review the module's command inventory after macOS upgrades.
+
 ## Linux builds
 
 Linux derivations (`x86_64-linux`, `i686-linux`, `riscv64-linux`) are built remotely on the
