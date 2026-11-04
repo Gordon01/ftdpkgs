@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, self, ... }:
 let
   # macOS shim hard-link groups for gcc and xcodebuild, plus their dispatchers.
   commands = [
@@ -108,48 +108,31 @@ let
         exit 127
       '';
     in
-    pkgs.runCommand "darwin-devtool-shims" { } ''
+    pkgs.runCommand "darwin-devtool-blockers" { } ''
       mkdir -p "$out/bin"
       for name in ${lib.escapeShellArgs commands}; do
         ln -s ${blocker} "$out/bin/$name"
       done
     '';
 
-  pathSetup = blockers: ''
-    () {
-      local fallback=${lib.escapeShellArg "${blockers}/bin"}
-      local entry
-      local -a next_path
-      local inserted=0
-      for entry in "''${path[@]}"; do
-        [[ "$entry" == "$fallback" ]] && continue
-        if [[ "$entry" == /usr/bin && $inserted == 0 ]]; then
-          next_path+=("$fallback")
-          inserted=1
-        fi
-        next_path+=("$entry")
-      done
-      export PATH
-      path=("''${next_path[@]}")
-    }
-  '';
 in
 {
-  flake.homeModules.darwin-devtool-shims = { pkgs, ... }: {
-    config = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
-      programs.zsh.envExtra = lib.mkAfter (pathSetup (mkBlockers pkgs));
-      programs.zsh.profileExtra = lib.mkAfter (pathSetup (mkBlockers pkgs));
-    };
+  flake.modules.darwin.devtool-blockers = { pkgs, ... }: {
+    # Nix profiles have order 1000; nix-darwin's macOS paths have order 1200.
+    environment.systemPath = lib.mkOrder 1100 [ "${mkBlockers pkgs}/bin" ];
   };
 
   perSystem = { pkgs, ... }: {
     checks = lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
-      darwin-devtool-shims =
+      darwin-devtool-blockers =
         let
           blockers = mkBlockers pkgs;
-          setup = pkgs.writeText "devtool-path.zsh" (pathSetup blockers);
+          darwin = self.darwinConfigurations."Gordon01-MB".config;
+          systemPaths = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+          profilePaths = lib.concatMapStringsSep ":" (profile: "${profile}/bin") darwin.environment.profiles;
         in
-        pkgs.runCommand "check-darwin-devtool-shims"
+        assert darwin.environment.systemPath == "${profilePaths}:${blockers}/bin:${systemPaths}";
+        pkgs.runCommand "check-darwin-devtool-blockers"
           {
             nativeBuildInputs = [ pkgs.zsh ];
           }
@@ -167,18 +150,30 @@ in
 
             export HOME="$TMPDIR/home"
             export ZDOTDIR="$HOME"
+            export USER=devtool-test
             mkdir -p "$HOME" "$TMPDIR/real tools"
             for name in git gcc; do
               printf '#!${pkgs.runtimeShell}\nprintf "real-%s\\n"\n' "$name" > "$TMPDIR/real tools/$name"
               chmod +x "$TMPDIR/real tools/$name"
             done
-            printf 'source %s\n' ${setup} > "$HOME/.zshenv"
-            # Model login startup reordering the path after .zshenv.
-            printf 'path=(/usr/bin "''${path[@]}")\nsource %s\n' ${setup} > "$HOME/.zprofile"
+            # Exercise generated global startup files without activating the system.
+            cat > "$HOME/.zshenv" <<'EOF'
+            unset __ETC_ZSHENV_SOURCED
+            if [[ "$TEST_FRESH_ENVIRONMENT" == 1 ]]; then
+              unset __NIX_DARWIN_SET_ENVIRONMENT_DONE
+            fi
+            source ${darwin.environment.etc."zshenv".source}
+            EOF
+            cat > "$HOME/.zprofile" <<'EOF'
+            unset __ETC_ZPROFILE_SOURCED
+            source ${darwin.environment.etc."zprofile".source}
+            EOF
             export NIX_GIT_BIN=${pkgs.git}/bin
+            export NIX_ZSH=${pkgs.zsh}/bin/zsh
+            export TEST_FRESH_ENVIRONMENT=1
             for mode in c lc ic lic; do
-              PATH=/usr/local/bin:/usr/bin:/bin ${pkgs.zsh}/bin/zsh -d$mode 'source "$1"' -- \
-                ${./tests/darwin-devtool-shims.zsh} ${blockers}/bin ${setup}
+              PATH=/usr/local/bin:/usr/bin:/bin "$NIX_ZSH" -d$mode 'source "$1"' -- \
+                ${./tests/devtool-blockers.zsh} ${blockers}/bin ${pkgs.bash}/bin/bash
             done
             touch "$out"
           '';

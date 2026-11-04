@@ -14,6 +14,7 @@ in
   flake.darwinConfigurations."Gordon01-MB" = inputs.nix-darwin.lib.darwinSystem {
     modules = [
       self.modules.darwin.gui
+      self.modules.darwin.devtool-blockers
       inputs.determinate.darwinModules.default
       ({ lib, pkgs, ... }: {
         imports = [ inputs.home-manager.darwinModules.home-manager ];
