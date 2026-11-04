@@ -11,7 +11,10 @@ let
 in
 {
   flake.homeConfigurations.alex = inputs.home-manager.lib.homeManagerConfiguration {
-    pkgs = inputs.nixpkgs.legacyPackages.aarch64-darwin;
+    pkgs = import inputs.nixpkgs {
+      system = "aarch64-darwin";
+      config.allowUnfreePredicate = pkg: inputs.nixpkgs.lib.getName pkg == "open-webui";
+    };
     modules = [ self.homeModules.alex ];
   };
 

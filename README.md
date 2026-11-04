@@ -11,6 +11,16 @@ It contains:
 - configuration for my macOS machines
 - reusable `flake-parts` modules
 
+## Apply configurations
+
+```sh
+nix run .#deploy                 # all: cloud, mac, wsl
+nix run .#deploy -- mac wsl      # selected targets, in order
+```
+
+`mac` runs `sudo darwin-rebuild switch`. NixOS hosts are built and switched on the hosts
+themselves through `nixos-rebuild --target-host/--build-host`.
+
 ## OpenCode with GitHub Copilot
 
 Then start `opencode`, run `/connect`, select **GitHub Copilot**.

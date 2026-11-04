@@ -9,11 +9,9 @@ nix run github:nix-community/nixos-anywhere -- \
 
 ## Apply configuration updates
 
+Each host builds its own system over SSH through the `cloud`/`wsl` SSH aliases:
+
 ```sh
-nix run nixpkgs#nixos-rebuild -- switch \
-  --flake .#cloud \
-  --build-host user@host \
-  --target-host user@host \
-  --elevate sudo \
-  --ask-elevate-password
+nix run .#deploy -- cloud
+nix run .#deploy -- wsl
 ```

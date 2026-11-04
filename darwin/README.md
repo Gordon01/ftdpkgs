@@ -3,10 +3,10 @@
 Build the Darwin configuration:
 
 ```sh
-NIXPKGS_ALLOW_UNFREE=1 darwin-rebuild build --flake .#Gordon01-MB --impure
+darwin-rebuild build --flake .#Gordon01-MB
 ```
 
-The `NIXPKGS_ALLOW_UNFREE=1` flag is required because `open-webui` is marked as an unfree package.
+Apply it with `nix run .#deploy -- mac`.
 
 ## Linux builds
 
@@ -16,12 +16,6 @@ WSL machine. The builder is configured through the Determinate nix-darwin module
 from `nixosConfigurations.wsl`. The Nix daemon connects as root using `~alex/.ssh/id_ed25519`,
 and the builder's host key is pinned in `keys/id_wsl.pub`. Update that file if the
 WSL host key changes.
-
-To apply the configuration to the machine, run:
-
-```sh
-sudo env NIXPKGS_ALLOW_UNFREE=1 darwin-rebuild switch --flake . --impure
-```
 
 ## Open WebUI
 
