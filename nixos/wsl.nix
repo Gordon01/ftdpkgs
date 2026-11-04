@@ -20,6 +20,15 @@
         usbip.enable = true;
       };
 
+      services.openssh.settings = {
+        X11Forwarding = true;
+        X11UseLocalhost = true;
+      };
+
+      environment.systemPackages = [
+        pkgs.xorg.xauth
+      ];
+
       system.stateVersion = "25.05";
       networking = {
         hostName = "nixos-wsl";
