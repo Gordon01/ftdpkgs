@@ -13,11 +13,5 @@
     environment.systemPackages = [
       pkgs.ghostty.terminfo
     ];
-
-    users.users.asergeev = {
-      openssh.authorizedKeys.keyFiles = [
-        ../keys/id_mac.pub
-      ];
-    };
   };
 }

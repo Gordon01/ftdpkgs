@@ -1,24 +1,28 @@
 # Compose the cloud machine; add host provisioning and workload choices here,
 # keeping shared account and network policy in reusable modules.
-{ inputs, self, ... }:
+{
+  config,
+  inputs,
+  self,
+  ...
+}:
+let
+  inherit (config) linuxUser;
+in
 {
   flake.nixosModules.cloud =
-    {
-      config,
-      pkgs,
-      ...
-    }:
+    { config, ... }:
     {
       imports = [
         inputs.disko.nixosModules.disko
         self.nixosModules.asergeev
+        self.nixosModules.base
         self.nixosModules.network
       ];
 
       nixpkgs.hostPlatform = "x86_64-linux";
       system.stateVersion = "26.11";
       networking.hostName = "cloud";
-      time.timeZone = "Europe/Moscow";
 
       disko.devices.disk.main = {
         type = "disk";
@@ -62,21 +66,20 @@
 
       networking.useDHCP = true;
       networking.firewall = {
-        allowedTCPPorts = [ config.home-manager.users.asergeev.services.rendezvous.httpPort ];
-        allowedUDPPorts = [ config.home-manager.users.asergeev.services.rendezvous.udpPort ];
+        allowedTCPPorts = [ config.home-manager.users.${linuxUser}.services.rendezvous.httpPort ];
+        allowedUDPPorts = [ config.home-manager.users.${linuxUser}.services.rendezvous.udpPort ];
       };
 
       security.sudo.enable = true;
       security.sudo.wheelNeedsPassword = false;
 
-      users.users.asergeev = {
+      users.users.${linuxUser} = {
         openssh.authorizedKeys.keyFiles = [
           ../keys/id_home_win.pub
         ];
       };
-      programs.nix-ld.enable = true;
 
-      home-manager.users.asergeev = {
+      home-manager.users.${linuxUser} = {
         imports = [
           inputs.cource.homeModules.rendezvous
         ];
@@ -84,14 +87,6 @@
         home = {
           stateVersion = "26.11";
         };
-      };
-
-      nix = {
-        package = pkgs.nix;
-        settings.experimental-features = [
-          "nix-command"
-          "flakes"
-        ];
       };
     };
 

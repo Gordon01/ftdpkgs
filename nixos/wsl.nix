@@ -1,22 +1,28 @@
 # Compose the WSL machine; add WSL-specific integration and workload choices here,
 # keeping shared user configuration in reusable modules.
-{ self, inputs, ... }:
+{
+  config,
+  inputs,
+  self,
+  ...
+}:
+let
+  inherit (config) linuxUser;
+in
 {
   flake.nixosModules.wsl =
-    {
-      pkgs,
-      ...
-    }:
+    { pkgs, ... }:
     {
       imports = [
         self.nixosModules.home-assistant
         self.nixosModules.asergeev
+        self.nixosModules.base
         self.nixosModules.network
       ];
 
       wsl = {
         enable = true;
-        defaultUser = "asergeev";
+        defaultUser = linuxUser;
         usbip.enable = true;
       };
 
@@ -31,27 +37,22 @@
 
       system.stateVersion = "25.05";
       networking = {
-        hostName = "nixos-wsl";
+        hostName = "wsl";
         proxy = {
           default = "http://127.0.0.1:10809";
           noProxy = "127.0.0.1,localhost,::1";
         };
       };
-      time.timeZone = "Europe/Moscow";
-      programs.nix-ld.enable = true;
 
-      home-manager.users.asergeev.home.stateVersion = "25.05";
+      home-manager.users.${linuxUser}.home.stateVersion = "25.05";
 
-      nix = {
-        package = pkgs.nix;
-        extraOptions = ''
-          experimental-features = nix-command flakes
-          extra-platforms = x86_64-linux riscv64-linux
-        '';
-        settings = {
-          trusted-users = [ "asergeev" ];
-          substituters = [ "https://mirror.yandex.ru/nixos" ];
-        };
+      nix.settings = {
+        extra-platforms = [
+          "x86_64-linux"
+          "riscv64-linux"
+        ];
+        trusted-users = [ linuxUser ];
+        substituters = [ "https://mirror.yandex.ru/nixos" ];
       };
 
       boot.binfmt.emulatedSystems = [ "riscv64-linux" ];

@@ -1,6 +1,14 @@
 # Compose the personal macOS user profile; select modules and service instances
 # here, keeping reusable implementations separate.
-{ inputs, self, ... }:
+{
+  config,
+  inputs,
+  self,
+  ...
+}:
+let
+  inherit (config) linuxUser;
+in
 {
   flake.homeConfigurations.alex = inputs.home-manager.lib.homeManagerConfiguration {
     pkgs = inputs.nixpkgs.legacyPackages.aarch64-darwin;
@@ -29,5 +37,31 @@
       openai.baseUrls = [ "http://localhost:8080/v1" ];
     };
     services.mlx-lm.enable = true;
+
+    # Aliases follow each host's NixOS config; names resolve via Tailscale MagicDNS.
+    programs.ssh = {
+      enable = true;
+      enableDefaultConfig = false;
+      settings = lib.listToAttrs (
+        map
+          (
+            name:
+            let
+              host = self.nixosConfigurations.${name}.config;
+            in
+            lib.nameValuePair host.networking.hostName (
+              {
+                User = linuxUser;
+                ForwardAgent = true;
+              }
+              // lib.optionalAttrs host.services.openssh.settings.X11Forwarding { ForwardX11 = true; }
+            )
+          )
+          [
+            "cloud"
+            "wsl"
+          ]
+      );
+    };
   };
 }
