@@ -1,13 +1,13 @@
-This repository contains the Nix configuration for Alexander Sergeev's MacBook.
+# Configuration
+
+- The Mac and its remote builder are configured in [darwin/gordon01.nix](darwin/gordon01.nix); Linux hosts and shared modules are in [nixos/](nixos/).
+- [home/alex.nix](home/alex.nix) derives SSH aliases from NixOS hostnames and `linuxUser`, defined in [nixos/asergeev.nix](nixos/asergeev.nix).
 
 # Nix workflow
 
-1. Run `nix flake check` before starting work and again after making changes. If needed, run additional validation for the Darwin or Home Manager configuration as well.
-2. Stage any new Nix files before running Nix commands. Nix only works with tracked files.
-3. Write Nix files as flake-parts modules.
-4. For live Home Manager tests, check `home-manager generations` first. Apply
-   the change and verify it works. Then run `home-manager switch --rollback`
-   and remove temporary config edits.
+1. Run `nix flake check` before and after changes. It does not ensure system or Home Manager profiles were built; validate affected profiles separately when needed.
+2. Stage new files used by this Git-backed flake before running Nix; untracked files are excluded. Write Nix files as flake-parts modules.
+3. The Mac uses WSL for remote Linux builds; see [darwin/README.md](darwin/README.md). Report if required validation is unavailable. `nix run .#deploy` switches all targets by default and is not a validation command; see [README.md](README.md).
 
 # General guidance
 
