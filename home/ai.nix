@@ -19,6 +19,7 @@
 
       programs.opencode = {
         enable = true;
+        package = null;
         settings = {
           model = "github-copilot/claude-opus-4.8";
           provider.mlx = {
