@@ -1,5 +1,5 @@
-{ ... }: {
-  flake.nixosModules.network = { pkgs, ... }: {
+{
+  flake.modules.nixos.network = { pkgs, ... }: {
     services.tailscale.enable = true;
 
     services.openssh.enable = true;
@@ -10,8 +10,6 @@
       PermitRootLogin = "no";
     };
 
-    environment.systemPackages = [
-      pkgs.ghostty.terminfo
-    ];
+    environment.systemPackages = [ pkgs.ghostty.terminfo ];
   };
 }

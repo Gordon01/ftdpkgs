@@ -1,70 +1,46 @@
 # Compose the personal macOS user profile; select modules and service instances
 # here, keeping reusable implementations separate.
 {
-  config,
   inputs,
+  linuxUser,
   self,
   ...
 }:
-let
-  inherit (config) linuxUser;
-in
 {
   flake.homeConfigurations.alex = inputs.home-manager.lib.homeManagerConfiguration {
-    pkgs = import inputs.nixpkgs {
-      system = "aarch64-darwin";
-      config.allowUnfreePredicate = pkg: inputs.nixpkgs.lib.getName pkg == "open-webui";
-    };
-    modules = [ self.homeModules.alex ];
+    # Reuse the Mac's nixpkgs instance, including its unfree package policy.
+    inherit (self.darwinConfigurations."Gordon01-MB") pkgs;
+    modules = [ self.modules.homeManager.alex ];
   };
 
-  flake.homeModules.alex = { lib, pkgs, ... }: {
+  flake.modules.homeManager.alex = { lib, pkgs, ... }: {
     imports = [
-      self.homeModules.dev
-      self.homeModules.ai
-      self.homeModules.mlx-lm
-      self.homeModules.open-webui
-      self.homeModules.shell
-      self.homeModules.gui
+      self.modules.homeManager.dev
+      self.modules.homeManager.ai
+      self.modules.homeManager.shell
+      self.modules.homeManager.gui
     ];
 
     home.stateVersion = "26.11";
     home.username = lib.mkDefault "alex";
     home.homeDirectory = lib.mkDefault "/Users/alex";
 
-    home.packages = with pkgs; [
-      maccy
-    ];
-    services.open-webui = {
-      enable = true;
-      openai.baseUrls = [ "http://localhost:8080/v1" ];
-    };
+    home.packages = [ pkgs.maccy ];
+    services.open-webui.enable = true;
     services.mlx-lm.enable = true;
 
     # Aliases follow each host's NixOS config; names resolve via Tailscale MagicDNS.
     programs.ssh = {
       enable = true;
       enableDefaultConfig = false;
-      settings = lib.listToAttrs (
-        map
-          (
-            name:
-            let
-              host = self.nixosConfigurations.${name}.config;
-            in
-            lib.nameValuePair host.networking.hostName (
-              {
-                User = linuxUser;
-                ForwardAgent = true;
-              }
-              // lib.optionalAttrs host.services.openssh.settings.X11Forwarding { ForwardX11 = true; }
-            )
-          )
-          [
-            "cloud"
-            "wsl"
-          ]
-      );
+      settings = lib.mapAttrs' (
+        _: host:
+        lib.nameValuePair host.config.networking.hostName {
+          User = linuxUser;
+          ForwardAgent = true;
+          ForwardX11 = lib.mkIf host.config.services.openssh.settings.X11Forwarding true;
+        }
+      ) self.nixosConfigurations;
     };
   };
 }

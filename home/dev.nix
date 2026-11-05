@@ -1,8 +1,7 @@
 # Define the shared development environment; add developer tools and workflow
 # preferences here, not host provisioning.
-{ ... }:
 {
-  flake.homeModules.dev = { pkgs, ... }: {
+  flake.modules.homeManager.dev = { pkgs, ... }: {
     home.packages = with pkgs; [
       nixd
       nixfmt

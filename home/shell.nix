@@ -2,7 +2,7 @@
 # everyday CLI integrations here, not desktop applications.
 { inputs, ... }:
 {
-  flake.homeModules.shell = { pkgs, ... }: {
+  flake.modules.homeManager.shell = { pkgs, ... }: {
     imports = [ inputs.nix-index-database.homeModules.nix-index ];
 
     home.packages = with pkgs; [
@@ -11,12 +11,8 @@
     ];
 
     programs = {
-      direnv = {
-        enable = true;
-      };
-      starship = {
-        enable = true;
-      };
+      direnv.enable = true;
+      starship.enable = true;
       zsh = {
         enable = true;
         enableCompletion = true;

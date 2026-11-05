@@ -1,13 +1,7 @@
 # Compose this Mac's system profile; add machine-specific settings and module
 # selections here, keeping reusable desktop preferences in the GUI module.
-{
-  config,
-  inputs,
-  self,
-  ...
-}:
+{ inputs, self, ... }:
 let
-  inherit (config) linuxUser;
   wsl = self.nixosConfigurations.wsl.config;
 in
 {
@@ -16,9 +10,8 @@ in
       self.modules.darwin.gui
       self.modules.darwin.devtool-blockers
       inputs.determinate.darwinModules.default
+      inputs.home-manager.darwinModules.home-manager
       ({ lib, pkgs, ... }: {
-        imports = [ inputs.home-manager.darwinModules.home-manager ];
-
         # Available to all users on this Mac.
         environment.systemPackages = with pkgs; [
           git
@@ -29,7 +22,7 @@ in
         security.pam.services.sudo_local.touchIdAuth = true;
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;
-        home-manager.users.alex = self.homeModules.alex;
+        home-manager.users.alex = self.modules.homeManager.alex;
         users.users.alex.home = "/Users/alex";
         system.primaryUser = "alex";
         system.defaults.screencapture.location = "/Users/alex/Pictures/Screenshots";
@@ -45,13 +38,13 @@ in
             builders-use-substitutes = true;
           };
 
-          # Linux builds run on the WSL machine as the shared Linux account.
+          # Linux builds run on the WSL machine as its default user.
           distributedBuilds = true;
           buildMachines = [
             {
               inherit (wsl.networking) hostName;
               protocol = "ssh-ng";
-              sshUser = linuxUser;
+              sshUser = wsl.wsl.defaultUser;
               # The daemon runs as root; this key is authorized via id_mac.pub.
               sshKey = "/Users/alex/.ssh/id_ed25519";
               systems = lib.unique ([ wsl.nixpkgs.hostPlatform.system ] ++ wsl.nix.settings.extra-platforms);

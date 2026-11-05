@@ -1,7 +1,7 @@
 # Configuration
 
 - The Mac and its remote builder are configured in [darwin/gordon01.nix](darwin/gordon01.nix); Linux hosts and shared modules are in [nixos/](nixos/).
-- [home/alex.nix](home/alex.nix) derives SSH aliases from NixOS hostnames and `linuxUser`, defined in [nixos/asergeev.nix](nixos/asergeev.nix).
+- [home/alex.nix](home/alex.nix) derives SSH aliases from NixOS hostnames and the `linuxUser` module argument, defined in [nixos/asergeev.nix](nixos/asergeev.nix).
 
 # Nix workflow
 

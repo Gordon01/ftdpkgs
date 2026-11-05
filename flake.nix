@@ -1,5 +1,5 @@
 {
-  description = "nix-darwin configuration for Gordon01-MB";
+  description = "ftdpkgs: macOS, NixOS and Home Manager configurations";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
@@ -50,8 +50,7 @@
     inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
-        inputs.flake-parts.flakeModules.flakeModules
-        inputs.home-manager.flakeModules.home-manager
+        inputs.flake-parts.flakeModules.modules
         inputs.nix-darwin.flakeModules.default
 
         (inputs.import-tree [

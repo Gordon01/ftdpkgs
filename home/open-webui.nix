@@ -1,8 +1,7 @@
 # Provide the reusable WebUI service; add service options and platform lifecycle
 # support here, keeping deployment choices in profiles.
-{ ... }:
 {
-  flake.homeModules.open-webui =
+  flake.modules.homeManager.open-webui =
     {
       config,
       lib,

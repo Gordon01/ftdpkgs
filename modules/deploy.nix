@@ -5,48 +5,37 @@
   perSystem =
     { pkgs, ... }:
     let
-      darwin = self.darwinConfigurations."Gordon01-MB";
+      darwin = self.darwinConfigurations."Gordon01-MB".config;
 
       # NixOS hosts build on themselves; the SSH aliases supply the login user.
-      nixosTargets = lib.mapAttrs (name: host: ''
-        nixos-rebuild switch --flake ".#${name}" \
-          --target-host ${host.config.networking.hostName} \
-          --build-host ${host.config.networking.hostName} \
-          --elevate sudo
-      '') self.nixosConfigurations;
-
-      targets = nixosTargets // {
-        mac = ''
-          sudo ${darwin.config.system.build.darwin-rebuild}/bin/darwin-rebuild switch --flake ".#Gordon01-MB"
-        '';
-      };
+      targets =
+        lib.mapAttrs (
+          name: host:
+          let
+            h = host.config.networking.hostName;
+          in
+          ''nixos-rebuild switch --flake ".#${name}" --target-host ${h} --build-host ${h} --elevate sudo''
+        ) self.nixosConfigurations
+        // {
+          mac = ''sudo ${darwin.system.build.darwin-rebuild}/bin/darwin-rebuild switch --flake ".#Gordon01-MB"'';
+        };
+      names = lib.attrNames targets;
     in
     {
       apps.deploy = {
         type = "app";
-        meta.description = "Apply configurations: deploy [${lib.concatStringsSep "|" (lib.attrNames targets)}]...";
+        meta.description = "Apply configurations: deploy [${lib.concatStringsSep "|" names}]...";
         program = lib.getExe (
           pkgs.writeShellApplication {
             name = "deploy";
             runtimeInputs = [ pkgs.nixos-rebuild ];
             text = ''
-              if [ "$#" -eq 0 ]; then
-                set -- ${lib.concatStringsSep " " (lib.attrNames targets)}
-              fi
-              for target in "$@"; do
+              [ "$#" -gt 0 ] || set -- ${toString names}
+              for target; do
                 echo "==> $target"
                 case "$target" in
-                ${lib.concatStrings (
-                  lib.mapAttrsToList (name: cmd: ''
-                    ${name})
-                      ${cmd}
-                      ;;
-                  '') targets
-                )}
-                  *)
-                    echo "unknown target: $target (expected: ${lib.concatStringsSep ", " (lib.attrNames targets)})" >&2
-                    exit 1
-                    ;;
+                ${lib.concatMapAttrsStringSep "\n  " (name: cmd: "${name}) ${cmd} ;;") targets}
+                *) echo "unknown target: $target (expected: ${lib.concatStringsSep ", " names})" >&2; exit 1 ;;
                 esac
               done
             '';

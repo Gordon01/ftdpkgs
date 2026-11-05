@@ -32,9 +32,7 @@ Review the module's command inventory after macOS upgrades.
 ## Linux builds
 
 Linux derivations (`x86_64-linux`, `i686-linux`, `riscv64-linux`) are built remotely on the
-WSL machine. The builder is configured through the Determinate nix-darwin module, which owns
-`/etc/nix/nix.custom.conf` and `/etc/nix/machines`. The host name, systems and features come
-from `nixosConfigurations.wsl`. The Nix daemon connects as root using `~alex/.ssh/id_ed25519`,
+WSL machine. The Nix daemon connects as root using `~alex/.ssh/id_ed25519`,
 and the builder's host key is pinned in `keys/id_wsl.pub`. Update that file if the
 WSL host key changes.
 

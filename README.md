@@ -11,6 +11,12 @@ It contains:
 - configuration for my macOS machines
 - reusable `flake-parts` modules
 
+## Structure
+
+- [darwin/](./darwin/) and [nixos/](./nixos/) contain host configurations and shared system modules.
+- [home/](./home/) contains Home Manager profiles and services.
+- [modules/](./modules/) contains deployment and formatting integration.
+
 ## Apply configurations
 
 ```sh

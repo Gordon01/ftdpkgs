@@ -1,8 +1,7 @@
 # Provide the reusable MLX inference service; add service options and lifecycle
 # support here, keeping client settings and enablement in profiles.
-{ ... }:
 {
-  flake.homeModules.mlx-lm =
+  flake.modules.homeManager.mlx-lm =
     {
       config,
       lib,
@@ -11,6 +10,7 @@
     }:
     let
       cfg = config.services.mlx-lm;
+      label = "com.alex.mlx-lm-server";
       mlxLmHome = "${config.xdg.dataHome}/mlx-lm";
       mlxLmLogPath = "${mlxLmHome}/mlx-lm-server.log";
       pythonMlx = pkgs.writeShellApplication {
@@ -67,14 +67,14 @@
             '';
 
         home.shellAliases = {
-          mlx-lm-start = "launchctl kickstart gui/$(id -u)/com.alex.mlx-lm-server";
-          mlx-lm-stop = "launchctl kill SIGTERM gui/$(id -u)/com.alex.mlx-lm-server";
+          mlx-lm-start = "launchctl kickstart gui/$(id -u)/${label}";
+          mlx-lm-stop = "launchctl kill SIGTERM gui/$(id -u)/${label}";
         };
 
         launchd.agents.mlx-lm-server = {
           enable = true;
           config = {
-            Label = "com.alex.mlx-lm-server";
+            Label = label;
             ProgramArguments = [
               (lib.getExe mlxLmServer)
               "--host"
