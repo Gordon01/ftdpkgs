@@ -9,6 +9,7 @@ in
     modules = [
       self.modules.darwin.gui
       self.modules.darwin.devtool-blockers
+      inputs.nix-homebrew.darwinModules.nix-homebrew
       inputs.determinate.darwinModules.default
       inputs.home-manager.darwinModules.home-manager
       ({ lib, pkgs, ... }: {
@@ -26,6 +27,15 @@ in
         users.users.alex.home = "/Users/alex";
         system.primaryUser = "alex";
         system.defaults.screencapture.location = "/Users/alex/Pictures/Screenshots";
+
+        nix-homebrew = {
+          enable = true;
+          user = "alex";
+        };
+        homebrew = {
+          enable = true;
+          brews = [ "tree" ];
+        };
 
         services.tailscale.enable = true;
 

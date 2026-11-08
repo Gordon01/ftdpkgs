@@ -8,6 +8,17 @@ darwin-rebuild build --flake .#Gordon01-MB
 
 Apply it with `nix run .#deploy -- mac`.
 
+## Homebrew
+
+`nix-homebrew` bootstraps native Apple Silicon Homebrew in `/opt/homebrew`.
+
+After applying the configuration, verify the formula directly:
+
+```sh
+brew list --versions tree
+/opt/homebrew/bin/tree --version
+```
+
 ## macOS developer-tool blockers
 
 The [devtool-blockers.nix](./devtool-blockers.nix) module blocks Apple's developer-tool
