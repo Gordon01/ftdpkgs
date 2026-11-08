@@ -25,7 +25,10 @@
     home.username = lib.mkDefault "alex";
     home.homeDirectory = lib.mkDefault "/Users/alex";
 
-    home.packages = [ pkgs.maccy ];
+    home.packages = with pkgs; [
+      element-desktop
+      maccy
+    ];
     services.open-webui.enable = true;
     services.mlx-lm.enable = true;
 

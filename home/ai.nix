@@ -1,9 +1,9 @@
 # Define the user's AI client workflow; add clients and provider connections here,
 # keeping service implementations in their own modules.
-{ inputs, self, ... }:
+{ self, ... }:
 {
   flake.modules.homeManager.ai =
-    { config, pkgs, ... }:
+    { config, ... }:
     let
       mlx = config.services.mlx-lm;
       mlxUrl = "http://${mlx.host}:${toString mlx.port}/v1";
@@ -14,12 +14,10 @@
         self.modules.homeManager.open-webui
       ];
 
-      home.packages = [ inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode2 ];
       services.open-webui.openai.baseUrls = [ mlxUrl ];
 
       programs.opencode = {
         enable = true;
-        package = null;
         settings = {
           model = "github-copilot/claude-opus-4.8";
           provider.mlx = {
