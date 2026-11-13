@@ -18,6 +18,7 @@
 
       programs.opencode = {
         enable = true;
+        context = ./agent-instructions.md;
         settings = {
           model = "github-copilot/claude-opus-4.8";
           provider.mlx = {
@@ -32,5 +33,7 @@
           };
         };
       };
+
+      home.file.".copilot/copilot-instructions.md".source = ./agent-instructions.md;
     };
 }
