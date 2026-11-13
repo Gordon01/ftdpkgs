@@ -26,6 +26,7 @@
     home.homeDirectory = lib.mkDefault "/Users/alex";
 
     home.packages = with pkgs; [
+      doublecmd
       element-desktop
       maccy
     ];

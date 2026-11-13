@@ -5,6 +5,7 @@
     home.packages = with pkgs; [
       nixd
       nixfmt
+      python3
     ];
 
     programs = {
