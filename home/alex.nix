@@ -29,6 +29,7 @@
       doublecmd
       element-desktop
       maccy
+      patch
     ];
     services.open-webui.enable = true;
     services.mlx-lm.enable = true;
