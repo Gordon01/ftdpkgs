@@ -8,6 +8,7 @@
     home.packages = with pkgs; [
       htop
       nix-output-monitor
+      yazi
     ];
 
     programs = {
