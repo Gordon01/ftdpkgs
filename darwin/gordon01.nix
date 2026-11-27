@@ -8,7 +8,6 @@ in
   flake.darwinConfigurations."Gordon01-MB" = inputs.nix-darwin.lib.darwinSystem {
     modules = [
       self.modules.darwin.gui
-      self.modules.darwin.devtool-blockers
       inputs.determinate.darwinModules.default
       inputs.home-manager.darwinModules.home-manager
       ({ lib, pkgs, ... }: {
@@ -18,6 +17,7 @@ in
           tmux
           vim
         ];
+        environment.appleDeveloperTools.block = true;
 
         security.pam.services.sudo_local.touchIdAuth = true;
         home-manager.useGlobalPkgs = true;
